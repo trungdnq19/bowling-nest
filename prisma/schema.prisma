@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id           String        @id @default(uuid()) 
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  playerScores PlayerScore[] @relation("PlayerScores")
+}
+
+model Game {
+  id           String        @id @default(uuid()) 
+  date         DateTime      @default(now())
+  location     String?
+  playerScores PlayerScore[] @relation("GameScores")
+  status       Status        @default(IN_PROGRESS)
+}
+
+model PlayerScore {
+  id         String  @id @default(uuid()) 
+  gameId     String 
+  game       Game    @relation("GameScores", fields: [gameId], references: [id])
+  playerId   String 
+  player     Player  @relation("PlayerScores", fields: [playerId], references: [id])
+  frames     Frame[] @relation("FrameScore")
+  totalScore Int     @default(0)
+}
+
+model Frame {
+  id            String      @id @default(uuid())
+  playerScore   PlayerScore @relation("FrameScore", fields: [playerScoreId], references: [id])
+  playerScoreId String
+  frameNumber   Int
+  rolls         Int[]
+  score         Int
+  frameType     FrameType @default(OPEN)
+}
+
+enum Status {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum FrameType {
+  STRIKE
+  SPARE
+  OPEN
+}
