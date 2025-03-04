@@ -2,56 +2,41 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
   Param,
-  Delete,
-  BadRequestException,
+  Body,
+  NotFoundException,
+  Patch,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
-import { CreateGameDto } from './dto/create-game.dto';
-import { Game, Status } from '@prisma/client';
-import { get } from 'lodash';
 
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Post()
-  async create(@Body() createGameDto: CreateGameDto): Promise<Game> {
+  async createGame(@Body('players') players: string[]) {
     try {
-      return await this.gamesService.createGameWithPlayers(
-        createGameDto.players,
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        'ServiceException: ' + get(error, 'message'),
-      );
+      return await this.gamesService.createGame(players);
+    } catch {
+      throw new Error('Failed to create game');
     }
   }
 
-  @Get()
-  findAll() {
-    return this.gamesService.findAll();
-  }
-
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gamesService.findOne(id);
+  async getGame(@Param('id') id: string) {
+    try {
+      return await this.gamesService.getGame(id);
+    } catch {
+      throw new NotFoundException('Game not found');
+    }
   }
 
-  @Patch(':id')
-  updateStatus(@Param('id') id: string, @Body('status') status: Status) {
-    return this.gamesService.updateGameStatus(id, status);
-  }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-  //   return this.gamesService.update(+id, updateGameDto);
-  // }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.gamesService.remove(+id);
+  @Patch(':id/roll')
+  async rollBall(@Param('id') id: string, @Body('pins') pins: number) {
+    try {
+      return await this.gamesService.rollBall(id, pins);
+    } catch (e){
+      throw new Error(e);
+    }
   }
 }

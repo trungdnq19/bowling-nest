@@ -14,14 +14,13 @@ generator client {
 }
 
 model Game {
-  id            String   @id @default(uuid())
-  date          DateTime @default(now())
-  location      String?
-  currentPlayer Int      @default(0)
-  currentFrame  Int      @default(0)
-  currentRoll   Int      @default(0)
-  status        Status   @default(IN_PROGRESS)
-  players       Player[]
+  id                 String   @id @default(uuid())
+  date               DateTime @default(now())
+  currentPlayerIndex Int      @default(0)
+  currentFrameIndex  Int      @default(0)
+  currentRollIndex   Int      @default(0)
+  status             Status   @default(IN_PROGRESS)
+  players            Player[]
 }
 
 model Player {
@@ -35,15 +34,13 @@ model Player {
 }
 
 model Frame {
-  id         String    @id @default(uuid())
-  player     Player    @relation(fields: [playerId], references: [id])
-  playerId   String
-  frameNo    Int
-  roll_one   Int
-  roll_two   Int
-  roll_three Int?
-  score      Int
-  type       FrameType @default(OPEN)
+  id       String    @id @default(uuid())
+  player   Player    @relation(fields: [playerId], references: [id])
+  playerId String
+  frameNo  Int
+  rolls    Int[]
+  score    Int
+  type     FrameType @default(OPEN)
 }
 
 enum Status {
