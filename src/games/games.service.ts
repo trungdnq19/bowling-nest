@@ -86,7 +86,7 @@ export class GamesService {
         data: { rolls: frame.rolls, score: frame.score, type: frame.type },
       });
 
-      await this.updatePlayerScore(player);
+      await this.updatePlayerScore(get(player, 'id'));
 
       if (frame.rolls.length >= 2 || frame.type === FrameType.STRIKE) {
         game.currentRollIndex = 0;
@@ -97,7 +97,7 @@ export class GamesService {
 
       return this.getGame(gameId);
     } catch (error) {
-      throw new Error('Failed to roll ball');
+      throw new Error(error);
     }
   }
 
@@ -127,6 +127,35 @@ export class GamesService {
     }
   }
 
+  private calculateScore(frames: Frame[]): number {
+    let score = 0;
+
+    for (let i = 0; i < frames.length; i++) {
+      const frame = frames[i];
+
+      score += frame.rolls.reduce((sum, roll) => sum + roll, 0);
+
+      if (frame.type === FrameType.STRIKE) {
+        // Strike bonus: Add next two rolls
+        if (i + 1 < frames.length) {
+          score += frames[i + 1]?.rolls[0] ?? 0;
+          if (frames[i + 1]?.rolls.length > 1) {
+            score += frames[i + 1]?.rolls[1] ?? 0;
+          } else if (i + 2 < frames.length) {
+            score += frames[i + 2]?.rolls[0] ?? 0;
+          }
+        }
+      } else if (frame.type === FrameType.SPARE) {
+        // Spare bonus: Add next roll
+        if (i + 1 < frames.length) {
+          score += frames[i + 1]?.rolls[0] ?? 0;
+        }
+      }
+    }
+
+    return score;
+  }
+
   private async updatePlayerScore(playerId: string) {
     try {
       const player = await this.prisma.player.findUnique({
@@ -135,10 +164,7 @@ export class GamesService {
       });
       if (!player) throw new NotFoundException('Player not found');
 
-      const totalScore = player.frames.reduce(
-        (total, frame) => total + frame.score,
-        0,
-      );
+      const totalScore = this.calculateScore(player.frames);
       await this.prisma.player.update({
         where: { id: playerId },
         data: { score: totalScore },
