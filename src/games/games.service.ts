@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { Game, Prisma, Status } from '@prisma/client';
-
+import { size } from 'lodash';
+import { MAX_PLAYERS } from '@/constants';
 @Injectable()
 export class GamesService {
   constructor(private prisma: PrismaService) {}
@@ -9,23 +10,20 @@ export class GamesService {
   async createGameWithPlayers(
     players: Prisma.PlayerCreateManyInput[],
   ): Promise<Game> {
+    if (size(players) > MAX_PLAYERS) {
+      throw new Error(`Max players exceeded, max is ${MAX_PLAYERS}`);
+    }
     return this.prisma.game.create({
       data: {
         status: 'IN_PROGRESS',
-        playerScores: {
-          create: players.map((player) => ({
-            player: {
-              create: {
-                name: player.name,
-              },
-            },
-          })),
+        players: {
+          create: players,
         },
       },
       include: {
-        playerScores: {
+        players: {
           include: {
-            player: true,
+            frames: true,
           },
         },
       },
@@ -53,9 +51,8 @@ export class GamesService {
         id,
       },
       include: {
-        playerScores: {
+        players: {
           include: {
-            player: true,
             frames: true,
           },
         },

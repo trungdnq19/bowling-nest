@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Game" ADD COLUMN     "currentFrame" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "currentPlayer" INTEGER NOT NULL DEFAULT 0;

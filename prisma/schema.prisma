@@ -13,40 +13,37 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Player {
-  id           String        @id @default(uuid()) 
-  name         String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  playerScores PlayerScore[] @relation("PlayerScores")
-}
-
 model Game {
-  id           String        @id @default(uuid()) 
-  date         DateTime      @default(now())
-  location     String?
-  playerScores PlayerScore[] @relation("GameScores")
-  status       Status        @default(IN_PROGRESS)
+  id            String   @id @default(uuid())
+  date          DateTime @default(now())
+  location      String?
+  currentPlayer Int      @default(0)
+  currentFrame  Int      @default(0)
+  currentRoll   Int      @default(0)
+  status        Status   @default(IN_PROGRESS)
+  players       Player[]
 }
 
-model PlayerScore {
-  id         String  @id @default(uuid()) 
-  gameId     String 
-  game       Game    @relation("GameScores", fields: [gameId], references: [id])
-  playerId   String 
-  player     Player  @relation("PlayerScores", fields: [playerId], references: [id])
-  frames     Frame[] @relation("FrameScore")
-  totalScore Int     @default(0)
+model Player {
+  id          String  @id @default(uuid())
+  game        Game    @relation(fields: [gameId], references: [id])
+  gameId      String
+  name        String
+  playerOrder Int     @default(0)
+  score       Int     @default(0)
+  frames      Frame[]
 }
 
 model Frame {
-  id            String      @id @default(uuid())
-  playerScore   PlayerScore @relation("FrameScore", fields: [playerScoreId], references: [id])
-  playerScoreId String
-  frameNumber   Int
-  rolls         Int[]
-  score         Int
-  frameType     FrameType @default(OPEN)
+  id         String    @id @default(uuid())
+  player     Player    @relation(fields: [playerId], references: [id])
+  playerId   String
+  frameNo    Int
+  roll_one   Int
+  roll_two   Int
+  roll_three Int?
+  score      Int
+  type       FrameType @default(OPEN)
 }
 
 enum Status {

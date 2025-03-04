@@ -6,18 +6,28 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { Game, Status } from '@prisma/client';
+import { get } from 'lodash';
 
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Post()
-  create(@Body() createGameDto: CreateGameDto): Promise<Game> {
-    return this.gamesService.createGameWithPlayers(createGameDto.players);
+  async create(@Body() createGameDto: CreateGameDto): Promise<Game> {
+    try {
+      return await this.gamesService.createGameWithPlayers(
+        createGameDto.players,
+      );
+    } catch (error) {
+      throw new BadRequestException(
+        'ServiceException: ' + get(error, 'message'),
+      );
+    }
   }
 
   @Get()
