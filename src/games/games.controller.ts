@@ -6,8 +6,10 @@ import {
   Body,
   NotFoundException,
   Patch,
+  BadRequestException,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
+import { getErrorMessage } from '../utils/error.util';
 
 @Controller('games')
 export class GamesController {
@@ -35,8 +37,8 @@ export class GamesController {
   async rollBall(@Param('id') id: string, @Body('pins') pins: number) {
     try {
       return await this.gamesService.rollBall(id, pins);
-    } catch (e){
-      throw new Error(e);
+    } catch (error) {
+      throw new BadRequestException(getErrorMessage(error));
     }
   }
 }
