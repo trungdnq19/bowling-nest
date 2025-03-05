@@ -26,6 +26,20 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+Before running the project, make sure to copy the `.env.example` file to `.env`:
+
+```bash
+$ cp .env.example .env
+```
+
+## Run with Docker
+
+To run the project using Docker Compose, use the following command:
+
+```bash
+$ docker-compose up -d
+```
+
 ## Project setup
 
 ```bash
